@@ -705,8 +705,9 @@ public class Tracker: NSObject {
      */
     fileprivate func processSetParam(_ key: String, value: @escaping ()->(String)) {
         // Check whether the parameter is not in read only mode                 buffer.volatileParameters[key] = Param(key: key, value: value)
+        let typedValue: () -> String = value
         if(!ReadOnlyParam.list.contains(key)) {
-            buffer.volatileParameters[key] = Param(key: key, value: value)
+            buffer.volatileParameters[key] = Param(key: key, value: typedValue)
         } else {
             delegate?.warningDidOccur?(String(format: "Parameter %@ is read only. Value will not be updated", key))
         }
@@ -725,7 +726,9 @@ public class Tracker: NSObject {
             return
         }
         
-        let param = Param(key: key, value: value, options: options)
+        let typedValue: () -> String = value
+        
+        let param = Param(key: key, value: typedValue, options: options)
         var newValues = [() -> String]()
         if param.isPersistent {
             if options.append {
@@ -733,13 +736,13 @@ public class Tracker: NSObject {
                     newValues = existingParam.values
                 }
                 if let existingParam = buffer.volatileParameters[key] {
-                    existingParam.values.append(value)
+                    existingParam.values.append(typedValue)
                 }
             } else {
                 buffer.volatileParameters.removeValue(forKey: key)
             }
             
-            newValues.append(value)
+            newValues.append(typedValue)
             param.values = newValues
             buffer.persistentParameters[key] = param
         } else {
@@ -751,7 +754,7 @@ public class Tracker: NSObject {
                     newValues = Array.init(existingParam.values)
                 }
             }
-            newValues.append(value)
+            newValues.append(typedValue)
             param.values = newValues
             buffer.volatileParameters[key] = param
         }
@@ -794,10 +797,11 @@ public class Tracker: NSObject {
     @objc(setStringParam:value:)
     public func setParam(_ key: String, value: String) -> Tracker {
         // If string is not JSON
+        let closure: () -> String = { value }
         if (value.toJSONObject() == nil) {
-            processSetParam(key, value: {value})
+            processSetParam(key, value: closure)
         } else {
-            processSetParam(key, value: {value})
+            processSetParam(key, value: closure)
         }
         
         return self
@@ -814,10 +818,11 @@ public class Tracker: NSObject {
     @objc(setStringParam:value:options:)
     public func setParam(_ key: String, value: String, options: ParamOption) -> Tracker {
         // If string is not JSON
+        let closure: () -> String = { value }
         if (value.toJSONObject() == nil) {
-            processSetParam(key, value: {value}, options: options)
+            processSetParam(key, value: closure, options: options)
         } else {
-            processSetParam(key, value: {value}, options: options)
+            processSetParam(key, value: closure, options: options)
         }
         
         return self
