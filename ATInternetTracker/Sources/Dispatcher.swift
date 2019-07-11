@@ -38,7 +38,24 @@ SOFTWARE.
 
 import Foundation
 
+extension DispatchQueue {
+    
+    func syncSafely(_ block: () -> ()) {
+        let name = __dispatch_queue_get_label(nil)
+        guard let str = String(cString: name, encoding: .utf8) else { return }
+        if self.label == str {
+            block()
+        } else {
+            self.sync {
+                block()
+            }
+        }
+    }
+}
+
 class Dispatcher: NSObject {
+    
+    static let dispatchQueue = DispatchQueue(label: "atintenet.dispatcher.queue", qos: .background)
     
     /// Tracker instance
     var tracker: Tracker
@@ -51,6 +68,12 @@ class Dispatcher: NSObject {
     Send the built hit
     */
     internal func dispatch(_ businessObjects: [BusinessObject]?) {
+        Dispatcher.dispatchQueue.async { [weak self] in
+            self?.iDispatch(businessObjects)
+        }
+    }
+    
+    private func iDispatch(_ businessObjects: [BusinessObject]?) {
         if(businessObjects != nil) {
             for(_, businessObject) in (businessObjects!).enumerated() {
                 switch(businessObject) {
