@@ -705,10 +705,12 @@ public class Tracker: NSObject {
      */
     fileprivate func processSetParam(_ key: String, value: @escaping ()->(String)) {
         // Check whether the parameter is not in read only mode                 buffer.volatileParameters[key] = Param(key: key, value: value)
+        Dispatcher.dispatchQueue.syncSafely {
         if(!ReadOnlyParam.list.contains(key)) {
             buffer.volatileParameters[key] = Param(key: key, value: value)
         } else {
             delegate?.warningDidOccur?(String(format: "Parameter %@ is read only. Value will not be updated", key))
+        }
         }
     }
     
@@ -720,6 +722,7 @@ public class Tracker: NSObject {
      - parameter options: parameter options
      */
     fileprivate func processSetParam(_ key: String, value: @escaping ()->(String), options: ParamOption) {
+        Dispatcher.dispatchQueue.syncSafely {
         guard !ReadOnlyParam.list.contains(key) else {
             delegate?.warningDidOccur?(String(format: "Parameter %@ is read only. Value will not be updated", key))
             return
@@ -754,6 +757,7 @@ public class Tracker: NSObject {
             newValues.append(value)
             param.values = newValues
             buffer.volatileParameters[key] = param
+        }
         }
     }
     
