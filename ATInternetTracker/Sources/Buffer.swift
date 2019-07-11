@@ -57,17 +57,19 @@ class Buffer: NSObject {
     }
     
     func recomputeUserId(){
+        Dispatcher.dispatchQueue.syncSafely {
         self.volatileParameters.removeValue(forKey: HitParam.userID.rawValue)
         let persistentOpt = ParamOption()
         persistentOpt.persistent = true
         let ignoreLimitedAdTracking = self.tracker.configuration.parameters["ignoreLimitedAdTracking"]?.toBool() ?? false
         self.persistentParameters[HitParam.userID.rawValue] = Param(key: HitParam.userID.rawValue, value: {TechnicalContext.userId(self.tracker.configuration.parameters["identifier"], ignoreLimitedAdTracking: ignoreLimitedAdTracking)}, options: persistentOpt)
+        }
     }
     
     /**
     Add context variables to the hit
     */
-    func addContextVariables() {
+    private func addContextVariables() {
         let persistentOption = ParamOption()
         persistentOption.persistent = true
         

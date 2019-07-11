@@ -1031,8 +1031,10 @@ public class Tracker: NSObject {
     ///
     /// - Parameter param: type
     @objc public func unsetParam(_ param: String) {
+        Dispatcher.dispatchQueue.syncSafely {
         buffer.volatileParameters.removeValue(forKey: param)
         buffer.persistentParameters.removeValue(forKey: param)
+        }
     }
     
     /// Remove the screen context: Use only for specific issue mark screenA, mark touchA, dont mark screenB, mark touchB. touchB will be no longer attached to screenA
