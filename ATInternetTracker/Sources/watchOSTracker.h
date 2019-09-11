@@ -21,7 +21,8 @@
  SOFTWARE.
  */
 
-#import <WatchKit/WatchKit.h>
+// The WatchKit framework is no longer available on iOS 13 (on iOS)
+//#import <WatchKit/WatchKit.h>
 
 //! Project version number for Tracker.
 FOUNDATION_EXPORT double watchOSTrackerVersionNumber;
